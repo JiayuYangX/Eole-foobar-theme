@@ -38,6 +38,7 @@ var properties = {
 	wallpaperblurvalue: window.GetProperty("_DISPLAY: Wallpaper Blur Value", 1.05),
 	wallpaperdisplay: window.GetProperty("_DISPLAY: Wallpaper 0=Filling 1=Adjust 2=Stretch", 0),
 	darklayout: window.GetProperty("_DISPLAY: Dark layout", false),
+	darklayout_follow_cui: window.GetProperty("_DISPLAY: Dark layout follow CUI", false),
 	tracktitle_ontop: window.GetProperty("_DISPLAY: Track title", true),
 	tracktitle_format: window.GetProperty("_DISPLAY: Track title format", "[%artist%  -  ][%album%[  -  %tracknumber%] : ]%title%[  -  %date%]"),
 	showRightSidebarBtn: window.GetProperty("_DISPLAY: show right sidebar btn", true),
@@ -1866,6 +1867,9 @@ function draw_main_menu(x,y){
 	control_bar.AppendMenuItem(MF_STRING, 5105, "Adapt colors to Main panel");
 	control_bar.CheckMenuItem(5101+globalProperties.colorsControls, true);
 
+	colors_menu.AppendMenuItem(MF_STRING, 5301, "Follow CUI dark/light mode");
+	colors_menu.CheckMenuItem(5301, properties.darklayout_follow_cui);
+
 	/*appearance_menu.AppendMenuItem(MF_STRING, 4025, "Enable disk cover cache");
 	appearance_menu.CheckMenuItem(4025, globalProperties.enableDiskCache);
 	appearance_menu.AppendMenuItem((globalProperties.enableDiskCache)?MF_STRING:MF_GRAYED, 4023, "Load all covers at startup");
@@ -2275,6 +2279,11 @@ function draw_main_menu(x,y){
 		get_colors();g_searchbox.adapt_look_to_layout();
 		window.Repaint();
         break;
+	case (idx == 5301):
+		properties.darklayout_follow_cui = !properties.darklayout_follow_cui;
+		window.SetProperty("_DISPLAY: Dark layout follow CUI", properties.darklayout_follow_cui);
+		on_colours_changed();
+		break;
     }
 
     basemenu = undefined;
@@ -3009,5 +3018,20 @@ function on_init(){
 			welcome_msg_timer=false;
 		}, 200);
 	}
+	setTimeout(function() {
+		on_colours_changed();
+	}, 100);
 }
 on_init();
+
+function on_colours_changed() {
+	if (!properties.darklayout_follow_cui) return;
+    var col = window.GetColourCUI(3);
+    var r = (col >> 16) & 0xFF;
+    var g = (col >> 8) & 0xFF;
+    var b = col & 0xFF;
+    var cuiDark = r + g + b < 383;
+    if (cuiDark !== properties.darklayout) {
+        Lightswitch(true);
+    }
+}
