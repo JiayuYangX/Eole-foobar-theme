@@ -3018,9 +3018,7 @@ function on_init(){
 			welcome_msg_timer=false;
 		}, 200);
 	}
-	setTimeout(function() {
-		on_colours_changed();
-	}, 100);
+	setTimeout(on_colours_changed, 100);
 }
 on_init();
 
